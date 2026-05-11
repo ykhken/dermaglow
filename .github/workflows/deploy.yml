@@ -18,14 +18,23 @@ jobs:
         run: |
           echo "=== Starting deploy at $(date) ==="
 
-          # perface.com
-          rsync -av --exclude='.github' --exclude='README.md' \
-            $GITHUB_WORKSPACE/perface.com/html/ /var/www/perface.com/html/
+          # Deploy each domain only if the folder has content
+          for domain_dir in $GITHUB_WORKSPACE/*/; do
+            domain=$(basename "$domain_dir")
+            # Skip hidden folders and non-domain folders
+            [[ "$domain" == .* ]] && continue
+            [[ "$domain" == "shared" ]] && continue
 
-          # laserkool-perface
-          rsync -av $GITHUB_WORKSPACE/laserkool-perface/ /var/www/laserkool-perface/
+            # Set destination based on domain structure
+            if [ -d "$domain_dir/html" ]; then
+              dest="/var/www/$domain/html/"
+            else
+              dest="/var/www/$domain/"
+            fi
 
-          # shared files (inc)
-          rsync -av $GITHUB_WORKSPACE/inc/ /var/www/inc/
+            echo "Deploying $domain → $dest"
+            mkdir -p "$dest"
+            rsync -av --delete "$domain_dir" "$dest"
+          done
 
           echo "=== Deploy completed at $(date) ==="
