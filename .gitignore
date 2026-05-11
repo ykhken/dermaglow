@@ -1,0 +1,5 @@
+.DS_Store
+*_backup*/
+*.log
+/ifaces-perface_backup*/
+/skin22web_backup*/
